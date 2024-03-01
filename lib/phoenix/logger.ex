@@ -211,7 +211,10 @@ defmodule Phoenix.Logger do
         Logger.log(level, fn ->
           %{method: method, request_path: request_path} = conn
           [method, ?\s, request_path]
-        end)
+        end,
+        method: method,
+        request_path: request_path
+      )
     end
   end
 
@@ -222,11 +225,30 @@ defmodule Phoenix.Logger do
         :ok
 
       level ->
+        state = connection_type(state)
+        duration = duration(duration)
+
         Logger.log(level, fn ->
-          %{status: status, state: state} = conn
+          %{method: method, request_path: request_path, status: status, state: state} = conn
           status = Integer.to_string(status)
-          [connection_type(state), ?\s, status, " in ", duration(duration)]
-        end)
+          [
+            method,
+            ?\s,
+            request_path,
+            " | ",
+            state,
+            ?\s,
+            status,
+            " in ",
+            duration
+          ]
+        end,
+        status: status,
+        method: method,
+        path: request_path,
+        state: state,
+        duration
+      )
     end
   end
 
